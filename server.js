@@ -47,9 +47,8 @@ app.get('/',(req,res)=>{
     res.send("this is the index page")
 })
 // receive an event composed of the type and url in the query
-app.post('/event',(req,res)=>{
+app.get('/event',(req,res)=>{
     const {type,url} = req.query
-    console.log("tracking",type,url)
     if(!type || !url) return res.status(400).json({status:'error',message:'missing parameters'})
     res.json({status:'success',message:`tracked ${type} at ${url}`})
     db.insert([{type:type, url:url, date: Date.now()}])

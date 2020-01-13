@@ -59,6 +59,7 @@
         db[event.url] += 1
     }
     function processData(data) {
+      console.log("raw data is",data)
         const byURL = {}
         data.forEach(e => insertItem(e,byURL))
         return byURL

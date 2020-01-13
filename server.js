@@ -10,8 +10,8 @@ const app = express()
 
 const PORT = 3000
 
-const db = new Engine.Db('.', {});
-const collection = db.collection("events.db");
+const DBEngine = new Engine.Db('.', {});
+const db = DBEngine.collection("events.db");
 
 /*
 collection.insert([
@@ -35,7 +35,7 @@ collection.insert([
 })
 */
 
-collection.find({}, function(err, item) {
+db.find({}, function(err, item) {
     item.each((err,doc) => {
         console.log(doc)
     })
@@ -44,15 +44,16 @@ collection.find({}, function(err, item) {
 app.get('/',(req,res)=>{
     res.send("this is the index page")
 })
+// receive an event composed of the type and url in the query
 app.get('/event',(req,res)=>{
     const {type,url} = req.query
     if(!type || !url) return res.status(400).json({status:'error',message:'missing parameters'})
     res.json({status:'success',message:`tracked ${type} at ${url}`})
-    collection.insert([{type:type, url:url, date: Date.now()}])
+    db.insert([{type:type, url:url, date: Date.now()}])
 })
 
 app.get('/data',(req,res)=>{
-    collection.find({},(err,item)=>{
+    db.find({},(err,item)=>{
         item.toArray((err,items)=>{
             res.status(200).json(items).end()
         })

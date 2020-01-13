@@ -4,9 +4,11 @@ const bodyParser = require('body-parser')
 var Engine = require('tingodb')(),
     assert = require('assert');
 
+const cors = require('cors');
 
 const app = express()
 // app.use(bodyParser)
+app.use(cors())
 
 const PORT = 3000
 

@@ -16,45 +16,19 @@ const PASSCODE = "foobarbaz"
 const DBEngine = new Engine.Db('.', {});
 const db = DBEngine.collection("events.db");
 
-/*
-collection.insert([
-    {
-        type:'pageload',
-        url:'foo',
-        date: Date.now()
-    },
-    {
-        type:'navlink',
-        url:'bar',
-        date: Date.now()
-    },
-    {
-        type:'navlink',
-        url:'bar',
-        date: Date.now()
-    },
-    ], {w:1}, function(err, result) {
-
-})
-*/
-
-// db.find({}, function(err, item) {
-//     item.each((err,doc) => {
-//         console.log(doc)
-//     })
-// });
 
 app.get('/',(req,res)=>{
     res.send("this is the index page")
 })
 // receive an event composed of the type and url in the query
-app.get('/event',(req,res)=>{
+app.post('/event',(req,res)=>{
     const {type,url} = req.query
     console.log("got ",type,url)
     if(!type || !url) return res.status(400).json({status:'error',message:'missing parameters'})
     res.json({status:'success',message:`tracked ${type} at ${url}`})
     db.insert([{type:type, url:url, date: Date.now()}])
 })
+
 
 app.post('/data.json',(req,res)=>{
     console.log("body is",req.body)

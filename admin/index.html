@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css">
+        table {
+            border-collapse: collapse;
+            min-width: 20em;
+        }
+        table th, table td {
+            border: 1px solid black;
+            padding: 0.25em 0.5em;
+        }
+        table th {
+            background-color: #f0f0f0;
+        }
+
+    </style>
+</head>
+<body>
+<h1>Some Stats</h1>
+
+<div class="hbox">
+    <label>passcode</label>
+    <input type="text" id="passcode">
+    <button id="do-load">load</button>
+</div>
+
+<table>
+    <thead>
+        <th colspan="2">for all time</th>
+    </thead>
+    <thead>
+        <th>URL</th>
+        <th>count</th>
+    </thead>
+    <tbody id="data-table">
+    <!-- data will go here -->
+    </tbody>
+</table>
+
+<script type="module">
+    // some utility functions
+    const $ = (s) => document.querySelector(s) //query  one item
+    const $$ = (s) => document.querySelectorAll(s) //query multiple items
+    const on = (el,type,cb) => el.addEventListener(type,cb) // add event handler
+    const TR = () => document.createElement('tr') //make a table row
+    const TD = (str) => { // make a table data element
+        const elm = document.createElement('td')
+        elm.innerHTML = str
+        return elm
+    }
+
+
+    //process JSON data
+    function insertItem(event, db) {
+        if(!db[event.url]) db[event.url] = 0
+        db[event.url] += 1
+    }
+    function processData(data) {
+        const byURL = {}
+        data.forEach(e => insertItem(e,byURL))
+        return byURL
+    }
+
+    // generate an HTML table
+    function generateTable(stats) {
+        const table = $("#data-table")
+        // remove old data
+        while(table.childNodes.length > 0) table.removeChild(table.firstChild)
+        // add new data
+        Object.keys(stats).forEach(url => {
+            const row = TR()
+            row.appendChild(TD(url))
+            row.appendChild(TD(stats[url]))
+            table.appendChild(row)
+        })
+    }
+
+    // fetch the data when the user clicks
+    const fetchData = ()=> {
+        const passcode = $("#passcode").value
+        console.log("the passcode is",passcode)
+        fetch('../data.json',{ method:'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body:JSON.stringify({passcode:passcode})
+        }) //post to get the data
+            .then(r => r.json()) //parse to JSON
+            .then(data => {
+                const stats = processData(data) //process it
+                generateTable(stats) //make a new HTML table out of it
+            })
+    }
+
+    on($("#do-load"),'click',fetchData)
+    on($("#passcode"),'keyup',(e)=>{
+        if(e.key === 'Enter') {
+            e.preventDefault()
+            fetchData()
+        }
+    })
+
+</script>
+
+</body>
+</html>

@@ -52,7 +52,7 @@ app.post('/event',(req,res)=>{
 })
 
 
-app.use('/data.json',passport.authenticate('github'),(req,res)=>{
+app.use('/data.json',(req,res)=>{
     console.log("user is",req.user)
     console.log("body is",req.body)
     console.log("checking auth")
@@ -64,8 +64,8 @@ app.use('/data.json',passport.authenticate('github'),(req,res)=>{
     })
 })
 
-app.get('/github',passport.authenticate('github'))
-app.get('/github/callback',passport.authenticate('github',{failureRedirect:'/login'}),(req,res)=>{
+app.get('/github',passport.authenticate('github',{session:false}))
+app.get('/github/callback',passport.authenticate('github',{failureRedirect:'/login',session:false}),(req,res)=>{
   res.redirect('/admin')
 })
 app.use('/admin',express.static('admin'))

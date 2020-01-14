@@ -2,6 +2,7 @@ const express = require('express')
 const fs = require('fs')
 const bodyParser = require('body-parser')
 const passport = require('passport')
+const session = require('express-session');
 const GithubStrategy = require('passport-github')
 var Engine = require('tingodb')(),
     assert = require('assert');
@@ -11,10 +12,11 @@ const cors = require('cors');
 const app = express()
 app.use(bodyParser.json({limit:'20MB'}))
 app.use(cors())
+app.use(session({ secret: 'passport-tutorial', cookie: { maxAge: 60000 }, resave: false, saveUninitialized: false }));
+
 
 const PORT = 3000
 const PASSCODE = "foobarbaz"
-//const USERS = {}
 
 const DBEngine = new Engine.Db('.', {});
 const db = DBEngine.collection("events.db");
@@ -28,9 +30,7 @@ if(process.env.GITHUB_CLIENT_ID) {
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
         callbackURL: process.env.GITHUB_CALLBACK_URL
     }, function (accessToken, refreshToken, profile, done) {
-        console.log("passport callback")
-        //store the user profile in memory by access token
-        //USERS[accessToken] = profile
+        console.log("github strategy callback")
         console.log("the user is", profile.id)
         console.log('access token is', accessToken)
         done(null, {id: profile.id, accessToken: accessToken})

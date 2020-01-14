@@ -24,6 +24,12 @@
   <button id="login">login</button>
   <div class="hbox">
     <button id="do-load">load data</button>
+    <button id="filter-alltime" class="toggle">
+      all time
+    </button>
+    <button id="filter-24hrs" class="toggle">
+      last 24 hrs
+    </button>
   </div>
 
 <table>
@@ -51,15 +57,18 @@
         return elm
     }
 
-
+    
     //process JSON data
     function insertItem(event, db) {
         if(!db[event.url]) db[event.url] = 0
         db[event.url] += 1
     }
-    function processData(data) {
+    function processData(data,range) {
       console.log("raw data is",data)
         const byURL = {}
+        let oldest = 0
+        if(range === '24hrs') oldest = Date.now()-24*60*60*1000
+        data = data.filter((item)=> (item.date > oldest))
         data.forEach(e => insertItem(e,byURL))
         return byURL
     }
@@ -79,7 +88,7 @@
     }
 
     // fetch the data when the user clicks
-    const fetchData = ()=> {
+    const fetchData = (range)=> {
         const table = $("#data-table")
         // remove old data
         while(table.childNodes.length > 0) table.removeChild(table.firstChild)
@@ -91,7 +100,7 @@
         }) //post to get the data
             .then(r => r.json()) //parse to JSON
             .then(data => {
-                const stats = processData(data) //process it
+                const stats = processData(data,range) //process it
                 generateTable(stats) //make a new HTML table out of it
             })
     }
@@ -101,7 +110,13 @@
       document.location.href = "../github"
     }
     on($("#login"),'click',login)
-    on($("#do-load"),'click',fetchData)
+    on($("#do-load"),'click',()=>{
+      fetchData('alltime')
+    })
+  
+    on($("#filter-24hrs"),'click',()=>{
+      fetchData('24hrs')
+    })
 
 </script>
 

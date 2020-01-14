@@ -23,12 +23,17 @@
 
   <button id="login">login</button>
   <div class="hbox">
-    <button id="do-load">load data</button>
-    <button id="filter-alltime" class="toggle">
-      all time
+    <button id="filter-1hrs" class="toggle">
+      last 1 hr
     </button>
     <button id="filter-24hrs" class="toggle">
       last 24 hrs
+    </button>
+    <button id="filter-7days" class="toggle">
+      last 7 days
+    </button>
+    <button id="filter-alltime" class="toggle">
+      all time
     </button>
   </div>
 
@@ -67,7 +72,9 @@
       console.log("raw data is",data)
         const byURL = {}
         let oldest = 0
-        if(range === '24hrs') oldest = Date.now()-24*60*60*1000
+        if(range === '1hrs')  oldest = Date.now()-60*60*1000
+        if(range === '24hrs') oldest = Date.now()-60*60*1000*24
+        if(range === '7days') oldest = Date.now()-60*60*1000*24*7
         data = data.filter((item)=> (item.date > oldest))
         data.forEach(e => insertItem(e,byURL))
         return byURL
@@ -110,13 +117,11 @@
       document.location.href = "../github"
     }
     on($("#login"),'click',login)
-    on($("#do-load"),'click',()=>{
-      fetchData('alltime')
-    })
-  
-    on($("#filter-24hrs"),'click',()=>{
-      fetchData('24hrs')
-    })
+
+    on($("#filter-1hrs"),'click',()=>fetchData('1hrs'))
+    on($("#filter-24hrs"),'click',()=>fetchData('24hrs'))
+    on($("#filter-7days"),'click',()=>fetchData('7days'))
+    on($("#filter-alltime"),'click',()=>fetchData('alltime'))
 
 </script>
 

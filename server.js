@@ -17,6 +17,8 @@ const DBEngine = new Engine.Db('.', {});
 const db = DBEngine.collection("events.db");
 
 
+console.log("props",process.env.GITHUB_CLIENT_ID)
+
 app.get('/',(req,res)=>{
     res.send("this is the index page")
 })

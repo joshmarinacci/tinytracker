@@ -80,6 +80,9 @@
 
     // fetch the data when the user clicks
     const fetchData = ()=> {
+        const table = $("#data-table")
+        // remove old data
+        while(table.childNodes.length > 0) table.removeChild(table.firstChild)
         fetch('../data.json',{ method:'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -84,7 +84,7 @@ app.get('/github/callback',
 app.use('/admin',express.static('admin'))
 
 app.use((req,res)=> res.status(400).end('invalid request'))
-app.listen(PORT,()=>console.log(`running tiny tracker on port ${PORT}`))
+app.listen(PORT,()=>console.log(`running tiny tracker on port ${PORT} with github auth`))
 
 
 

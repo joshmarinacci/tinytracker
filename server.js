@@ -31,32 +31,24 @@ if(process.env.GITHUB_CLIENT_ID) {
         callbackURL: process.env.GITHUB_CALLBACK_URL
     }, function (accessToken, refreshToken, profile, done) {
         console.log("github strategy callback")
-        console.log("the user is", profile.id)
-        console.log("profile is",profile)
-        console.log('access token is', accessToken)
-        if(ALLOWED_USERS.indexOf(profile.username)<0) {
-          console.log("not a valid user")
-        }
-        done(null, {id: profile.id, username:profile.username, accessToken: accessToken})
+        if(ALLOWED_USERS.indexOf(profile.username)<0) return
+        done(null, {username:profile.username})
     }))
 
-  passport.serializeUser((user, cb) => cb(null, user))
+  passport.serializeUser((user, cb)  => cb(null, user))
   passport.deserializeUser((obj, cb) => cb(null, obj))
   
   app.use(require('cookie-parser')());  
   app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveUninitialized: true }));
   app.use(passport.initialize())
   app.use(passport.session())
-
 }
 
 app.get('/',(req,res)=>{
-    console.log("/ user is",req.user)
     res.send("this is the index page")
 })
 // receive an event composed of the type and url in the query
 app.post('/event',(req,res)=>{
-    console.log("/event user is",req.user)
     const {type,url} = req.query
     console.log("got ",type,url)
     if(!type || !url) return res.status(400).json({status:'error',message:'missing parameters'})
@@ -65,18 +57,16 @@ app.post('/event',(req,res)=>{
 })
 
 const allowed = (req,res,done) => {
-    console.log("verifyihng the user",req.user)
-  if(!req.user) return res.status(400).json({status:'error',message:'not logged in'})
-  if(ALLOWED_USERS.indexOf(profile.username)<0) {
-    console.log("not a valid user")
-  }
-  done()
+    console.log("verifying the user",req.user)
+    if(!req.user) return res.status(400).json({status:'error',message:'not logged in'})
+    if(ALLOWED_USERS.indexOf(req.user.username)<0) {
+      console.log("not a valid user")
+      return res.status(400).json({status:'error', message:'user not approved'})
+    }
+    done()
 };
 
-app.use('/data.json', allowed,(req,res)=>{
-    console.log("checking auth")
-    console.log("/data user is",req.user)
-    //return res.status(400).json({status:'error',message:'invalid'})
+app.use('/data.json', allowed, (req,res)=>{
     db.find({},(err,item)=>{
         item.toArray((err,items)=>{
             res.status(200).json(items).end()

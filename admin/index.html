@@ -21,14 +21,10 @@
 <body>
 <h1>Some Stats</h1>
 
-  <button id="login">
-    login
-  </button>
-<div class="hbox">
-    <label>passcode</label>
-    <input type="text" id="passcode">
-    <button id="do-load">load</button>
-</div>
+  <button id="login">login</button>
+  <div class="hbox">
+    <button id="do-load">load data</button>
+  </div>
 
 <table>
     <thead>
@@ -84,13 +80,11 @@
 
     // fetch the data when the user clicks
     const fetchData = ()=> {
-        const passcode = $("#passcode").value
-        console.log("the passcode is",passcode)
         fetch('../data.json',{ method:'POST',
             headers: {
                 'Content-Type': 'application/json'
-            },
-            body:JSON.stringify({passcode:passcode})
+            }
+            
         }) //post to get the data
             .then(r => r.json()) //parse to JSON
             .then(data => {
@@ -105,12 +99,6 @@
     }
     on($("#login"),'click',login)
     on($("#do-load"),'click',fetchData)
-    on($("#passcode"),'keyup',(e)=>{
-        if(e.key === 'Enter') {
-            e.preventDefault()
-            fetchData()
-        }
-    })
 
 </script>
 

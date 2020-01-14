@@ -21,6 +21,9 @@
 <body>
 <h1>Some Stats</h1>
 
+  <button id="login">
+    login
+  </button>
 <div class="hbox">
     <label>passcode</label>
     <input type="text" id="passcode">
@@ -98,9 +101,10 @@
 
     const login = () => {
       console.log("logging in")
-      window.open("../github","_blank")
+      document.location.href = "../github"
     }
-    on($("#do-load"),'click',login)
+    on($("#login"),'click',login)
+    on($("#do-load"),'click',fetchData)
     on($("#passcode"),'keyup',(e)=>{
         if(e.key === 'Enter') {
             e.preventDefault()

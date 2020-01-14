@@ -14,7 +14,7 @@ app.use(cors())
 
 const PORT = 3000
 const PASSCODE = "foobarbaz"
-const USERS = {}
+//const USERS = {}
 
 const DBEngine = new Engine.Db('.', {});
 const db = DBEngine.collection("events.db");
@@ -30,8 +30,8 @@ if(process.env.GITHUB_CLIENT_ID) {
     }, function (accessToken, refreshToken, profile, done) {
         console.log("passport callback")
         //store the user profile in memory by access token
-        USERS[accessToken] = profile
-        console.log("the user is", USERS[accessToken])
+        //USERS[accessToken] = profile
+        console.log("the user is", profile.id)
         console.log('access token is', accessToken)
         done(null, {id: profile.id, accessToken: accessToken})
     }))
@@ -52,7 +52,8 @@ app.post('/event',(req,res)=>{
 })
 
 
-app.post('/data.json',(req,res)=>{
+app.use('/data.json',passport.authenticate('github'),(req,res)=>{
+    console.log("user is",req.user)
     console.log("body is",req.body)
     console.log("checking auth")
     if(!req.body || req.body.passcode !== PASSCODE) return res.status(400).json({status:'error',message:'invalid'})

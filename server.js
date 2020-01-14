@@ -6,8 +6,12 @@ const session = require('express-session');
 const GithubStrategy = require('passport-github')
 var Engine = require('tingodb')(),
     assert = require('assert');
-
 const cors = require('cors');
+
+
+const PORT = 3000
+
+const ALLOWED_USERS=process.env.USERS.split(",")
 
 const app = express()
 app.use(bodyParser.json({limit:'20MB'}))
@@ -15,8 +19,6 @@ app.use(cors())
 
 
 
-const PORT = 3000
-const PASSCODE = "foobarbaz"
 
 const DBEngine = new Engine.Db('.', {});
 const db = DBEngine.collection("events.db");
@@ -30,17 +32,16 @@ if(process.env.GITHUB_CLIENT_ID) {
     }, function (accessToken, refreshToken, profile, done) {
         console.log("github strategy callback")
         console.log("the user is", profile.id)
+        console.log("profile is",profile)
         console.log('access token is', accessToken)
-        done(null, {id: profile.id, accessToken: accessToken})
+        if(ALLOWED_USERS.indexOf(profile.username)<0) {
+          console.log("not a valid user")
+        }
+        done(null, {id: profile.id, username:profile.username, accessToken: accessToken})
     }))
 
-  passport.serializeUser(function(user, cb) {
-    cb(null, user);
-  });
-
-  passport.deserializeUser(function(obj, cb) {
-    cb(null, obj);
-  });
+  passport.serializeUser((user, cb) => cb(null, user))
+  passport.deserializeUser((obj, cb) => cb(null, obj))
   
   app.use(require('cookie-parser')());  
   app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveUninitialized: true }));
@@ -63,11 +64,19 @@ app.post('/event',(req,res)=>{
     db.insert([{type:type, url:url, date: Date.now()}])
 })
 
+const allowed = (req,res,done) => {
+    console.log("verifyihng the user",req.user)
+  if(!req.user) return res.status(400).json({status:'error',message:'not logged in'})
+  if(ALLOWED_USERS.indexOf(profile.username)<0) {
+    console.log("not a valid user")
+  }
+  done()
+};
 
-app.use('/data.json', require('connect-ensure-login').ensureLoggedIn(),(req,res)=>{
+app.use('/data.json', allowed,(req,res)=>{
     console.log("checking auth")
     console.log("/data user is",req.user)
-    if(!req.body || req.body.passcode !== PASSCODE) return res.status(400).json({status:'error',message:'invalid'})
+    //return res.status(400).json({status:'error',message:'invalid'})
     db.find({},(err,item)=>{
         item.toArray((err,items)=>{
             res.status(200).json(items).end()

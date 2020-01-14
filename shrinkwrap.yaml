@@ -1,4 +1,6 @@
 dependencies:
+  connect-ensure-login: 0.1.1
+  cookie-parser: 1.4.4
   cors: 2.8.5
   express: 4.17.1
   express-session: 1.17.0
@@ -55,6 +57,12 @@ packages:
       node: '>= 0.8'
     resolution:
       integrity: sha512-zauLjrfCG+xvoyaqLoV8bLVXXNGC4JqlxFCutSDWA6fJrTo2ZuvLYTqZ7aHBLZSMOopbzwv8f+wZcVzfVTI2Dg==
+  /connect-ensure-login/0.1.1:
+    dev: false
+    engines:
+      node: '>= 0.4.0'
+    resolution:
+      integrity: sha1-F03MUSQ7nqwj+NmCFa62aU4uihI=
   /content-disposition/0.5.3:
     dependencies:
       safe-buffer: 5.1.2
@@ -69,10 +77,25 @@ packages:
       node: '>= 0.6'
     resolution:
       integrity: sha512-hIP3EEPs8tB9AT1L+NUqtwOAps4mk2Zob89MWXMHjHWg9milF/j4osnnQLXBCBFBk/tvIG/tUc9mOUJiPBhPXA==
+  /cookie-parser/1.4.4:
+    dependencies:
+      cookie: 0.3.1
+      cookie-signature: 1.0.6
+    dev: false
+    engines:
+      node: '>= 0.8.0'
+    resolution:
+      integrity: sha512-lo13tqF3JEtFO7FyA49CqbhaFkskRJ0u/UAiINgrIXeRCY41c88/zxtrECl8AKH3B0hj9q10+h3Kt8I7KlW4tw==
   /cookie-signature/1.0.6:
     dev: false
     resolution:
       integrity: sha1-4wOogrNCzD7oylE6eZmXNNqzriw=
+  /cookie/0.3.1:
+    dev: false
+    engines:
+      node: '>= 0.6'
+    resolution:
+      integrity: sha1-5+Ch+e9DtMi6klxcWpboBtFoc7s=
   /cookie/0.4.0:
     dev: false
     engines:
@@ -540,6 +563,8 @@ registry: 'https://registry.npmjs.org/'
 shrinkwrapMinorVersion: 9
 shrinkwrapVersion: 3
 specifiers:
+  connect-ensure-login: ^0.1.1
+  cookie-parser: ^1.4.4
   cors: ^2.8.5
   express: ^4.17.1
   express-session: ^1.16.1

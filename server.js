@@ -12,7 +12,7 @@ const cors = require('cors');
 const app = express()
 app.use(bodyParser.json({limit:'20MB'}))
 app.use(cors())
-app.use(session({ secret: 'passport-tutorial', cookie: { maxAge: 60000 }, resave: false, saveUninitialized: false }));
+
 
 
 const PORT = 3000
@@ -21,8 +21,6 @@ const PASSCODE = "foobarbaz"
 const DBEngine = new Engine.Db('.', {});
 const db = DBEngine.collection("events.db");
 
-
-console.log("props",process.env.GITHUB_CLIENT_ID)
 if(process.env.GITHUB_CLIENT_ID) {
     console.log("enabling Github auth",process.env.GITHUB_CALLBACK_URL)
     passport.use(new GithubStrategy({
@@ -36,14 +34,28 @@ if(process.env.GITHUB_CLIENT_ID) {
         done(null, {id: profile.id, accessToken: accessToken})
     }))
 
-    app.use(passport.initialize())
+  passport.serializeUser(function(user, cb) {
+    cb(null, user);
+  });
+
+  passport.deserializeUser(function(obj, cb) {
+    cb(null, obj);
+  });
+  
+  app.use(require('cookie-parser')());  
+  app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveUninitialized: true }));
+  app.use(passport.initialize())
+  app.use(passport.session())
+
 }
 
 app.get('/',(req,res)=>{
+    console.log("/ user is",req.user)
     res.send("this is the index page")
 })
 // receive an event composed of the type and url in the query
 app.post('/event',(req,res)=>{
+    console.log("/event user is",req.user)
     const {type,url} = req.query
     console.log("got ",type,url)
     if(!type || !url) return res.status(400).json({status:'error',message:'missing parameters'})
@@ -52,10 +64,9 @@ app.post('/event',(req,res)=>{
 })
 
 
-app.use('/data.json',(req,res)=>{
-    console.log("user is",req.user)
-    console.log("body is",req.body)
+app.use('/data.json', require('connect-ensure-login').ensureLoggedIn(),(req,res)=>{
     console.log("checking auth")
+    console.log("/data user is",req.user)
     if(!req.body || req.body.passcode !== PASSCODE) return res.status(400).json({status:'error',message:'invalid'})
     db.find({},(err,item)=>{
         item.toArray((err,items)=>{
@@ -64,9 +75,12 @@ app.use('/data.json',(req,res)=>{
     })
 })
 
-app.get('/github',passport.authenticate('github',{session:false}))
-app.get('/github/callback',passport.authenticate('github',{failureRedirect:'/login',session:false}),(req,res)=>{
-  res.redirect('/admin')
+app.get('/github',
+        passport.authenticate('github'))
+app.get('/github/callback',
+        passport.authenticate('github',{failureRedirect:'/login'}),
+        (req,res)=>{
+          res.redirect('/admin')
 })
 app.use('/admin',express.static('admin'))
 

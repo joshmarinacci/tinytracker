@@ -32,6 +32,7 @@ app.post('/event',(req,res)=>{
 
 app.post('/data.json',(req,res)=>{
     console.log("body is",req.body)
+    console.log("checking auth")
     if(!req.body || req.body.passcode !== PASSCODE) return res.status(400).json({status:'error',message:'invalid'})
     db.find({},(err,item)=>{
         item.toArray((err,items)=>{

@@ -104,7 +104,7 @@
         const rows = Object.keys(stats).map(url => {
             return { url: url, count: stats[url]}
         })
-        rows.sort((a,b) => a.count - b.count)
+        rows.sort((a,b) => b.count - a.count)
         rows.forEach(item => {
             const row = TR()
             row.appendChild(TD(item.url))

@@ -101,10 +101,14 @@
         // remove old data
         while(table.childNodes.length > 0) table.removeChild(table.firstChild)
         // add new data
-        Object.keys(stats).forEach(url => {
+        const rows = Object.keys(stats).map(url => {
+            return { url: url, count: stats[url]}
+        })
+        rows.sort((a,b) => a.count - b.count)
+        rows.forEach(item => {
             const row = TR()
-            row.appendChild(TD(url))
-            row.appendChild(TD(stats[url]))
+            row.appendChild(TD(item.url))
+            row.appendChild(TD(item.count))
             table.appendChild(row)
         })
     }

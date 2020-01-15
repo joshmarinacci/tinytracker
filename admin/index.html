@@ -16,6 +16,17 @@
             background-color: #f0f0f0;
         }
 
+        #spinner {
+            display: none;
+            background: red;
+            padding: 1em;
+        }
+        #spinner.visible {
+            display: block;
+            background: red;
+            color: white;
+        }
+
     </style>
 </head>
 <body>
@@ -36,6 +47,10 @@
       all time
     </button>
   </div>
+
+<div>
+    <div id="spinner">loading</div>
+</div>
 
 <table>
     <thead>
@@ -94,12 +109,19 @@
         })
     }
 
+    const BASE_URL = "https://joshmarinacci-tinytracker.glitch.me/"
+
+    const showError = (msg) => {
+        $("#spinner").innerText = msg
+        $("#spinner").classList.add('visible')
+    }
     // fetch the data when the user clicks
     const fetchData = (range)=> {
         const table = $("#data-table")
         // remove old data
         while(table.childNodes.length > 0) table.removeChild(table.firstChild)
-        fetch('../data.json',{ method:'POST',
+        $("#spinner").classList.add('visible')
+        fetch(`${BASE_URL}../data.json`,{ method:'POST',
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -107,14 +129,16 @@
         }) //post to get the data
             .then(r => r.json()) //parse to JSON
             .then(data => {
+                if(data.status === 'error') return showError('error: '+ data.message)
                 const stats = processData(data,range) //process it
                 generateTable(stats) //make a new HTML table out of it
+                $("#spinner").classList.remove('visible')
             })
     }
 
     const login = () => {
       console.log("logging in")
-      document.location.href = "../github"
+      document.location.href = `${BASE_URL}../github`
     }
     on($("#login"),'click',login)
 

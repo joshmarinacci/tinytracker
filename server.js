@@ -4,8 +4,7 @@ const bodyParser = require('body-parser')
 const passport = require('passport')
 const session = require('express-session');
 const GithubStrategy = require('passport-github')
-var Engine = require('tingodb')(),
-    assert = require('assert');
+const Engine = require('tingodb')()
 const cors = require('cors');
 
 function setupOptions() {
@@ -14,8 +13,11 @@ function setupOptions() {
         options = Object.assign({},JSON.parse(fs.readFileSync('config.json').toString()))
     }
     if(process.env.USERS) options.USERS = process.env.USERS
+    if(!options.USERS) throw new Error("USERS not defined")
     options.ALLOWED_USERS=options.USERS.split(",")
+
     if(process.env.GITHUB_CALLBACK_URL) options.GITHUB_CALLBACK_URL = process.env.GITHUB_CALLBACK_URL
+    if(!options.GITHUB_CALLBACK_URL) throw new Error("GITHUB_CALLBACK_URL not defined")
     console.log("options",options)
     return options
 }
@@ -30,9 +32,8 @@ app.use(cors())
 
 const DBEngine = new Engine.Db('.', {});
 const db = DBEngine.collection("events.db");
-
 const USERS = {}
-console.log("enabling Github auth",options.GITHUB_CALLBACK_URL)
+
 passport.use(new GithubStrategy({
     clientID: options.GITHUB_CLIENT_ID,
     clientSecret: options.GITHUB_CLIENT_SECRET,
@@ -47,7 +48,7 @@ passport.use(new GithubStrategy({
 passport.serializeUser((user, cb)  => cb(null, user))
 passport.deserializeUser((obj, cb) => cb(null, obj))
 
-app.use(require('cookie-parser')());  
+app.use(require('cookie-parser')());
 app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveUninitialized: true }));
 app.use(passport.initialize())
 app.use(passport.session())
@@ -76,11 +77,14 @@ app.get('/',(req,res)=>{
 })
 // receive an event composed of the type and url in the query
 app.use('/event',(req,res)=>{
-    const {type,url} = req.query
-    console.log("got ",type,url,req.body)
-    if(!type || !url) return res.status(400).json({status:'error',message:'missing parameters'})
-    res.json({status:'success',message:`tracked ${type} at ${url}`})
-    db.insert([{type:type, url:url, date: Date.now()}])
+    console.log("got ",req.query,req.body)
+    let event = Object.assign({},req.body)
+    event = Object.assign(event,req.query)
+    event.date = Date.now()
+    console.log("final event is",event)
+    if(!event.type) return res.status(400).json({status:'error',message:'missing parameters at least for type'})
+    res.json({status:'success',message:`tracked ${event.type}`})
+    db.insert([event])
 })
 
 const allowed = (req,res,done) => {
@@ -106,15 +110,10 @@ app.use('/data.json', allowed, (req,res)=>{
     })
 })
 
-app.get('/github',
-        passport.authenticate('github'))
-app.get('/github/callback',
-        passport.authenticate('github',{failureRedirect:'/login'}),
-        (req,res)=>{
-          res.send(authTemplate(req))
-})
+app.get('/github',  passport.authenticate('github'))
+app.get('/github/callback', passport.authenticate('github',{failureRedirect:'/login'}),
+        (req,res)=> res.send(authTemplate(req)))
 app.use('/admin',express.static('admin'))
-
 app.use((req,res)=> res.status(400).end('invalid request'))
 app.listen(options.PORT,()=>console.log(`running tiny tracker on port ${options.PORT} with github auth`))
 

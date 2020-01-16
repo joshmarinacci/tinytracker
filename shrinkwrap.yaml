@@ -4,6 +4,7 @@ dependencies:
   cors: 2.8.5
   express: 4.17.1
   express-session: 1.17.0
+  formidable: 1.2.1
   passport: 0.4.1
   passport-github: 1.1.0
   tingodb: 0.6.1
@@ -219,6 +220,10 @@ packages:
       node: '>= 0.8'
     resolution:
       integrity: sha512-aAWcW57uxVNrQZqFXjITpW3sIUQmHGG3qSb9mUah9MgMC4NeWhNOlNjXEYq3HjRAvL6arUviZGGJsBg6z0zsWA==
+  /formidable/1.2.1:
+    dev: false
+    resolution:
+      integrity: sha512-Fs9VRguL0gqGHkXS5GQiMCr1VhZBxz0JnJs4JmMp/2jL18Fmbzvv7vOFRU+U8TBkHEE/CX1qDXzJplVULgsLeg==
   /forwarded/0.1.2:
     dev: false
     engines:
@@ -568,6 +573,7 @@ specifiers:
   cors: ^2.8.5
   express: ^4.17.1
   express-session: ^1.16.1
+  formidable: ^1.2.1
   passport: ^0.4.1
   passport-github: ^1.1.0
   tingodb: ^0.6.1

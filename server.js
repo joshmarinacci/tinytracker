@@ -19,6 +19,13 @@ function setupOptions() {
 
     if(process.env.GITHUB_CALLBACK_URL) options.GITHUB_CALLBACK_URL = process.env.GITHUB_CALLBACK_URL
     if(!options.GITHUB_CALLBACK_URL) throw new Error("GITHUB_CALLBACK_URL not defined")
+
+    if(process.env.GITHUB_CLIENT_ID) options.GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
+    if(!options.GITHUB_CLIENT_ID) throw new Error("GITHUB_CLIENT_ID not defined")
+    if(process.env.GITHUB_CLIENT_SECRET) options.GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET
+    if(!options.GITHUB_CLIENT_SECRET) throw new Error("GITHUB_CLIENT_SECRET not defined")
+  
+  
     console.log("options",options)
     return options
 }

@@ -7,11 +7,14 @@ const GithubStrategy = require('passport-github')
 const formidable = require('formidable')
 const Engine = require('tingodb')()
 const cors = require('cors');
+const jsonlines = require('jsonlines')
 
 function setupOptions() {
-    let options = {}
+    let options = {
+        AUTH_ENABLED:true
+    }
     if(fs.existsSync('config.json')) {
-        options = Object.assign({},JSON.parse(fs.readFileSync('config.json').toString()))
+        options = Object.assign(options,JSON.parse(fs.readFileSync('config.json').toString()))
     }
     if(process.env.USERS) options.USERS = process.env.USERS
     if(!options.USERS) throw new Error("USERS not defined")
@@ -26,8 +29,7 @@ function setupOptions() {
     if(!options.GITHUB_CLIENT_SECRET) throw new Error("GITHUB_CLIENT_SECRET not defined")
     if(process.env.PORT) options.PORT = process.env.PORT
     if(!options.PORT) throw new Error("PORT not defined")
-  
-  
+
     console.log("options",options)
     return options
 }
@@ -45,24 +47,26 @@ const DBEngine = new Engine.Db('.', {});
 const db = DBEngine.collection("events.db");
 const USERS = {}
 
-passport.use(new GithubStrategy({
-    clientID: options.GITHUB_CLIENT_ID,
-    clientSecret: options.GITHUB_CLIENT_SECRET,
-    callbackURL: options.GITHUB_CALLBACK_URL
-}, function (accessToken, refreshToken, profile, done) {
-    console.log("github strategy callback",accessToken)
-    if(options.ALLOWED_USERS.indexOf(profile.username)<0) return
-    USERS[accessToken] = profile
-    done(null, {username:profile.username, accessToken: accessToken})
-}))
+if(options.AUTH_ENABLED) {
+    passport.use(new GithubStrategy({
+        clientID: options.GITHUB_CLIENT_ID,
+        clientSecret: options.GITHUB_CLIENT_SECRET,
+        callbackURL: options.GITHUB_CALLBACK_URL
+    }, function (accessToken, refreshToken, profile, done) {
+        console.log("github strategy callback", accessToken)
+        if (options.ALLOWED_USERS.indexOf(profile.username) < 0) return
+        USERS[accessToken] = profile
+        done(null, {username: profile.username, accessToken: accessToken})
+    }))
 
-passport.serializeUser((user, cb)  => cb(null, user))
-passport.deserializeUser((obj, cb) => cb(null, obj))
+    passport.serializeUser((user, cb) => cb(null, user))
+    passport.deserializeUser((obj, cb) => cb(null, obj))
 
-app.use(require('cookie-parser')());
-app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveUninitialized: true }));
-app.use(passport.initialize())
-app.use(passport.session())
+    app.use(require('cookie-parser')());
+    app.use(require('express-session')({secret: 'keyboard cat', resave: true, saveUninitialized: true}));
+    app.use(passport.initialize())
+    app.use(passport.session())
+}
 
 function authTemplate(req) {
     return `<html>
@@ -105,6 +109,7 @@ app.use('/event', parseForm, (req,res)=>{
 })
 
 const allowed = (req,res,done) => {
+    if(!options.AUTH_ENABLED) return done()
     const token = req.headers['access-key']
     const user = USERS[token]
     if(!user) return res.json({success:false,message:'invalid access token, cannot find user'})
@@ -125,6 +130,14 @@ app.use('/data.json', allowed, (req,res)=>{
             res.status(200).json(items).end()
         })
     })
+})
+app.use('/data.jsonline', allowed, (req,res)=>{
+    const stream = db.find({}).stream()
+    res.status(200)
+    const str = jsonlines.stringify()
+    str.pipe(res)
+    stream.on('data',(row)=> str.write(row))
+    stream.on('end',()=> str.end())
 })
 
 app.get('/github',  passport.authenticate('github'))

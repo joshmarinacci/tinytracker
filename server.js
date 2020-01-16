@@ -24,6 +24,8 @@ function setupOptions() {
     if(!options.GITHUB_CLIENT_ID) throw new Error("GITHUB_CLIENT_ID not defined")
     if(process.env.GITHUB_CLIENT_SECRET) options.GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET
     if(!options.GITHUB_CLIENT_SECRET) throw new Error("GITHUB_CLIENT_SECRET not defined")
+    if(process.env.PORT) options.PORT = process.env.PORT
+    if(!options.PORT) throw new Error("PORT not defined")
   
   
     console.log("options",options)

@@ -5,6 +5,7 @@ dependencies:
   express: 4.17.1
   express-session: 1.17.0
   formidable: 1.2.1
+  jsonlines: 0.1.1
   passport: 0.4.1
   passport-github: 1.1.0
   tingodb: 0.6.1
@@ -282,6 +283,10 @@ packages:
       node: '>= 0.10'
     resolution:
       integrity: sha512-M4Sjn6N/+O6/IXSJseKqHoFc+5FdGJ22sXqnjTpdZweHK64MzEPAyQZyEU3R/KRv2GLoa7nNtg/C2Ev6m7z+eA==
+  /jsonlines/0.1.1:
+    dev: false
+    resolution:
+      integrity: sha1-T80kbcXQ44aRkHxEqwAveC0dlMw=
   /lodash/4.17.15:
     dev: false
     resolution:
@@ -574,6 +579,7 @@ specifiers:
   express: ^4.17.1
   express-session: ^1.16.1
   formidable: ^1.2.1
+  jsonlines: ^0.1.1
   passport: ^0.4.1
   passport-github: ^1.1.0
   tingodb: ^0.6.1

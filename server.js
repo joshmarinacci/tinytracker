@@ -31,15 +31,17 @@ app.use(cors())
 const DBEngine = new Engine.Db('.', {});
 const db = DBEngine.collection("events.db");
 
+const USERS = {}
 console.log("enabling Github auth",options.GITHUB_CALLBACK_URL)
 passport.use(new GithubStrategy({
     clientID: options.GITHUB_CLIENT_ID,
     clientSecret: options.GITHUB_CLIENT_SECRET,
     callbackURL: options.GITHUB_CALLBACK_URL
 }, function (accessToken, refreshToken, profile, done) {
-    console.log("github strategy callback")
+    console.log("github strategy callback",accessToken)
     if(options.ALLOWED_USERS.indexOf(profile.username)<0) return
-    done(null, {username:profile.username})
+    USERS[accessToken] = profile
+    done(null, {username:profile.username, accessToken: accessToken})
 }))
 
 passport.serializeUser((user, cb)  => cb(null, user))
@@ -50,6 +52,24 @@ app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveU
 app.use(passport.initialize())
 app.use(passport.session())
 
+function authTemplate(req) {
+    return `<html>
+    <body>
+        <p>great. you are authenticated. you may close this window now.</p>
+        <script>
+            document.body.onload = function() {
+                const injectedUser = ${JSON.stringify(req.user)}
+                console.log("the user is",injectedUser)
+                const msg = {payload:injectedUser, status:'success'}
+                console.log("msg",msg)
+                console.log('location',window.opener.location,'*')
+                window.opener.postMessage(msg, '*')
+                console.log("done posting a message")
+            }
+    </script>
+    </body>
+    </html>`
+}
 
 app.get('/',(req,res)=>{
     res.send("this is the index page")
@@ -64,6 +84,11 @@ app.use('/event',(req,res)=>{
 })
 
 const allowed = (req,res,done) => {
+    const token = req.headers['access-key']
+    const user = USERS[token]
+    if(!user) return res.json({success:false,message:'invalid access token, cannot find user'})
+    console.log("the user is",user.username)
+    req.user = user
     console.log("verifying the user",req.user)
     if(!req.user) return res.status(400).json({status:'error',message:'not logged in'})
     if(options.ALLOWED_USERS.indexOf(req.user.username)<0) {
@@ -86,7 +111,7 @@ app.get('/github',
 app.get('/github/callback',
         passport.authenticate('github',{failureRedirect:'/login'}),
         (req,res)=>{
-          res.redirect('/admin')
+          res.send(authTemplate(req))
 })
 app.use('/admin',express.static('admin'))
 

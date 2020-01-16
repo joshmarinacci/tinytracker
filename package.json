@@ -9,13 +9,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1",
-    "tingodb": "^0.6.1",
+    "connect-ensure-login": "^0.1.1",
+    "cookie-parser": "^1.4.4",
     "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-session": "^1.16.1",
+    "formidable": "^1.2.1",
     "passport": "^0.4.1",
     "passport-github": "^1.1.0",
-    "express-session": "^1.16.1",
-    "cookie-parser": "^1.4.4",
-    "connect-ensure-login": "^0.1.1"
+    "tingodb": "^0.6.1"
   }
 }

@@ -4,6 +4,7 @@ const bodyParser = require('body-parser')
 const passport = require('passport')
 const session = require('express-session');
 const GithubStrategy = require('passport-github')
+const formidable = require('formidable')
 const Engine = require('tingodb')()
 const cors = require('cors');
 
@@ -27,6 +28,7 @@ let options = setupOptions()
 
 const app = express()
 app.use(bodyParser.json({limit:'20MB'}))
+app.use(bodyParser.urlencoded())
 app.use(cors())
 
 
@@ -76,8 +78,14 @@ app.get('/',(req,res)=>{
     res.send("this is the index page")
 })
 // receive an event composed of the type and url in the query
-app.use('/event',(req,res)=>{
-    console.log("got ",req.query,req.body)
+const parseForm = (req,res,done) => {
+    new formidable.IncomingForm().parse(req, (err,fields,files)=>{
+        req.body = fields
+        done()
+    })
+}
+
+app.use('/event', parseForm, (req,res)=>{
     let event = Object.assign({},req.body)
     event = Object.assign(event,req.query)
     event.date = Date.now()

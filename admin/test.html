@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tracker test</title>
+
+</head>
+<body>
+<h3>This page is sending tracker info</h3>
+
+<script type="module">
+    const data = new FormData()
+    data.set('type','pageload')
+    data.set('url',document.location.toString())
+    data.set('referrer',document.referrer)
+    data.set('userAgent',navigator.userAgent)
+    navigator.sendBeacon('https://joshbigmac.ngrok.io/event',data)
+</script>
+
+
+</body>
+</html>

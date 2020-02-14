@@ -107,3 +107,4 @@ dist
 
 events.db
 config.json
+stats.json

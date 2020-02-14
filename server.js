@@ -133,12 +133,12 @@ function processEvent(event) {
     if(event.lang) inc(bucket,'lang',event.lang)
     if(event.charset) inc(bucket,'charset',event.charset)
 
-    console.log("inserted %o",bucket)
+    //console.log("inserted %o",bucket)
 }
 
 function saveStats() {
     console.log("saving")
-    fs.writeFileSync("stats.json",JSON.stringify(stats).toString())
+    fs.writeFileSync("stats.json",JSON.stringify(stats,null,'  ').toString())
 }
 function loadStats() {
     try {

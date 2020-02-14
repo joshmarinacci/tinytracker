@@ -193,7 +193,7 @@ app.use('/data.jsonline', allowed, (req,res)=>{
     stream.on('end',()=> str.end())
 })
 app.use('/stats.json', allowed, (req,res)=>{
-    res.status(200,stats).end()
+    res.status(200).json(stats).end()
 })
 
 app.get('/github',  passport.authenticate('github'))

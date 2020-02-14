@@ -98,14 +98,67 @@ const parseForm = (req,res,done) => {
     })
 }
 
+let stats = {}
+function inc(obj, key, key2) {
+    if(!obj[key]) obj[key] = {}
+    if(!obj[key][key2]) obj[key][key2] = 0
+    obj[key][key2] += 1
+}
+
+function processEvent(event) {
+    db.insert([event])
+    const date = new Date()
+    date.setTime(event.date)
+    const year = date.getUTCFullYear()
+    if(!stats[year]) stats[year] = {}
+    const month = date.getUTCMonth()
+    if(!stats[year][month]) stats[year][month] = {}
+    const day = date.getUTCDate()
+    if(!stats[year][month][day]) stats[year][month][day] = {}
+    const bucket = stats[year][month][day]
+
+    if(event.type) {
+        if(!bucket.type) bucket.type = {}
+        if(!bucket.type[event.type]) bucket.type[event.type] = 0
+        bucket.type[event.type] += 1
+    }
+    if(event.url) {
+        if(!bucket.url) bucket.url = {}
+        if(!bucket.url[event.url]) bucket.url[event.url] = 0
+        bucket.url[event.url] += 1
+    }
+    if(event.referrer) inc(bucket,'referrer',event.referrer)
+    if(event.userAgent) inc(bucket,'userAgent',event.userAgent)
+    if(event.region) inc(bucket,'region',event.region)
+    if(event.lang) inc(bucket,'lang',event.lang)
+    if(event.charset) inc(bucket,'charset',event.charset)
+
+    console.log("inserted %o",bucket)
+}
+
+function saveStats() {
+    console.log("saving")
+    fs.writeFileSync("stats.json",JSON.stringify(stats).toString())
+}
+function loadStats() {
+    try {
+        stats = JSON.parse(fs.readFileSync('stats.json').toString())
+        console.log("loaded stats %o",stats)
+    } catch (e) {
+        console.log("error loading stats.json. starting over")
+        stats = {}
+    }
+}
+loadStats()
+setInterval(saveStats,1000*5) //save once a minute
+
 app.use('/event', parseForm, (req,res)=>{
     let event = Object.assign({},req.body)
     event = Object.assign(event,req.query)
     event.date = Date.now()
-    console.log("final event is",event)
     if(!event.type) return res.status(400).json({status:'error',message:'missing parameters at least for type'})
     res.json({status:'success',message:`tracked ${event.type}`})
-    db.insert([event])
+    processEvent(event)
 })
 
 const allowed = (req,res,done) => {
